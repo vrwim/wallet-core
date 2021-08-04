@@ -15,21 +15,27 @@
 #include "../BinaryCoding.h"
 #include "../Hash.h"
 #include "../HexCoding.h"
-#include "../Zcash/Transaction.h"
-#include "../Groestlcoin/Transaction.h"
+#include "../Zcash/Transaction.h" // TODO remove
+#include "../Zcash/TransactionBuilder.h" // TODO remove
+#include "../Groestlcoin/Transaction.h" // TODO remove
 #include <tuple>
 
 using namespace TW;
 using namespace TW::Bitcoin;
 
-template <typename Transaction, typename TransactionBuilder>
-Result<Transaction, Common::Proto::SigningError> TransactionSigner<Transaction, TransactionBuilder>::sign() {
+// TODO: change througout Bitcoin::Transaction -> Transaction
+// TODO change TransactionTN to Transaction (if remains)
+// TODO change TransactionBuilderTN to TransactionBuilder (if remains)
+
+template <typename TransactionTN>
+Result<TransactionTN, Common::Proto::SigningError> TransactionSigner<TransactionTN>::sign() {
     if (plan.error != Common::Proto::OK) {
         // plan with error, fail
-        return Result<Transaction, Common::Proto::SigningError>::failure(plan.error);
+        return Result<TransactionTN, Common::Proto::SigningError>::failure(plan.error);
     }
     if (transaction.inputs.size() == 0 || plan.utxos.size() == 0) {
-        return Result<Transaction, Common::Proto::SigningError>::failure(Common::Proto::Error_missing_input_utxos);
+        std::cout << "sizes " << transaction.inputs.size() << " " << plan.utxos.size() << "\n";
+        return Result<TransactionTN, Common::Proto::SigningError>::failure(Common::Proto::Error_missing_input_utxos);
     }
 
     signedInputs.clear();
@@ -47,12 +53,12 @@ Result<Transaction, Common::Proto::SigningError> TransactionSigner<Transaction, 
         if (i < transaction.inputs.size()) {
             auto result = sign(script, i, utxo);
             if (!result) {
-                return Result<Transaction, Common::Proto::SigningError>::failure(result.error());
+                return Result<TransactionTN, Common::Proto::SigningError>::failure(result.error());
             }
         }
     }
 
-    Transaction tx(transaction);
+    TransactionTN tx(transaction);  // TODO remove qualifier
     tx.inputs = move(signedInputs);
     tx.outputs = transaction.outputs;
     // save estimated size
@@ -60,11 +66,11 @@ Result<Transaction, Common::Proto::SigningError> TransactionSigner<Transaction, 
         tx.previousEstimatedVirtualSize = static_cast<int>(plan.fee / input.byte_fee());
     }
 
-    return Result<Transaction, Common::Proto::SigningError>::success(std::move(tx));
+    return Result<TransactionTN, Common::Proto::SigningError>::success(std::move(tx)); // TODO remove qulifier
 }
 
-template <typename Transaction, typename TransactionBuilder>
-Result<void, Common::Proto::SigningError> TransactionSigner<Transaction, TransactionBuilder>::sign(Script script, size_t index,
+template <typename TransactionTN>
+Result<void, Common::Proto::SigningError> TransactionSigner<TransactionTN>::sign(Script script, size_t index,
                                                   const Proto::UnspentTransaction& utxo) {
     assert(index < transaction.inputs.size());
 
@@ -131,10 +137,10 @@ Result<void, Common::Proto::SigningError> TransactionSigner<Transaction, Transac
     return Result<void, Common::Proto::SigningError>::success();
 }
 
-template <typename Transaction, typename TransactionBuilder>
-Result<std::vector<Data>, Common::Proto::SigningError> TransactionSigner<Transaction, TransactionBuilder>::signStep(
+template <typename TransactionTN>
+Result<std::vector<Data>, Common::Proto::SigningError> TransactionSigner<TransactionTN>::signStep(
     Script script, size_t index, const Proto::UnspentTransaction& utxo, uint32_t version) const {
-    Transaction transactionToSign(transaction);
+    TransactionTN transactionToSign(transaction);
     transactionToSign.inputs = signedInputs;
     transactionToSign.outputs = transaction.outputs;
 
@@ -224,9 +230,9 @@ Result<std::vector<Data>, Common::Proto::SigningError> TransactionSigner<Transac
     return Result<std::vector<Data>, Common::Proto::SigningError>::failure(Common::Proto::Error_script_output);
 }
 
-template <typename Transaction, typename TransactionBuilder>
-Data TransactionSigner<Transaction, TransactionBuilder>::createSignature(
-    const Transaction& transaction,
+template <typename TransactionTN>
+Data TransactionSigner<TransactionTN>::createSignature(
+    const TransactionTN& transaction,
     const Script& script, 
     const std::optional<KeyPair>& pair,
     size_t index,
@@ -248,8 +254,8 @@ Data TransactionSigner<Transaction, TransactionBuilder>::createSignature(
     return sig;
 }
 
-template <typename Transaction, typename TransactionBuilder>
-Data TransactionSigner<Transaction, TransactionBuilder>::pushAll(const std::vector<Data>& results) {
+template <typename TransactionTN>
+Data TransactionSigner<TransactionTN>::pushAll(const std::vector<Data>& results) {
     Data data;
     for (auto& result : results) {
         if (result.empty()) {
@@ -273,8 +279,8 @@ Data TransactionSigner<Transaction, TransactionBuilder>::pushAll(const std::vect
     return data;
 }
 
-template <typename Transaction, typename TransactionBuilder>
-std::optional<KeyPair> TransactionSigner<Transaction, TransactionBuilder>::keyPairForPubKeyHash(const Data& hash) const {
+template <typename TransactionTN>
+std::optional<KeyPair> TransactionSigner<TransactionTN>::keyPairForPubKeyHash(const Data& hash) const {
     for (auto& key : input.private_key()) {
         auto privKey = PrivateKey(key);
         auto pubKeyExtended = privKey.getPublicKey(TWPublicKeyTypeSECP256k1Extended);
@@ -288,8 +294,8 @@ std::optional<KeyPair> TransactionSigner<Transaction, TransactionBuilder>::keyPa
     return {};
 }
 
-template <typename Transaction, typename TransactionBuilder>
-Data TransactionSigner<Transaction, TransactionBuilder>::scriptForScriptHash(const Data& hash) const {
+template <typename TransactionTN>
+Data TransactionSigner<TransactionTN>::scriptForScriptHash(const Data& hash) const {
     auto hashString = hex(hash);
     auto it = input.scripts().find(hashString);
     if (it == input.scripts().end()) {
@@ -300,6 +306,7 @@ Data TransactionSigner<Transaction, TransactionBuilder>::scriptForScriptHash(con
 }
 
 // Explicitly instantiate a Signers for compatible transactions.
-template class Bitcoin::TransactionSigner<Bitcoin::Transaction, TransactionBuilder>;
-template class Bitcoin::TransactionSigner<Zcash::Transaction, Zcash::TransactionBuilder>;
-template class Bitcoin::TransactionSigner<Groestlcoin::Transaction, TransactionBuilder>;
+// TODO remove
+template class Bitcoin::TransactionSigner<Bitcoin::Transaction>;
+template class Bitcoin::TransactionSigner<Zcash::Transaction>;
+template class Bitcoin::TransactionSigner<Groestlcoin::Transaction>;

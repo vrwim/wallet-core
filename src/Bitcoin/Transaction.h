@@ -18,7 +18,7 @@
 
 namespace TW::Bitcoin {
 
-struct Transaction {
+/* virtual */ class TransactionBase {
 public:
     /// Transaction data format version (note, this is signed)
     int32_t version = 1;
@@ -35,6 +35,73 @@ public:
     /// transaction may not be added to a block until after `lockTime`.
     uint32_t lockTime = 0;
 
+public:
+    TransactionBase() = default;
+
+    TransactionBase(int32_t version, uint32_t lockTime)
+        : version(version), lockTime(lockTime) {}
+
+    virtual ~TransactionBase() = default;
+
+    virtual void addInput(const OutPoint& outPoint, const Script& script, uint32_t sequence) = 0;
+
+    virtual void addOutput(Amount value, const Script& lockingScript) = 0;
+
+    /// Whether the transaction is empty.
+    virtual bool empty() const = 0;
+
+    /*
+    Transaction(int32_t version, uint32_t lockTime, TW::Hash::Hasher hasher = TW::Hash::sha256d)
+        : version(version), lockTime(lockTime), inputs(), outputs(), hasher(hasher) {}
+
+    /// Whether the transaction is empty.
+    bool empty() const { return inputs.empty() && outputs.empty(); }
+
+    /// Generates the signature pre-image.
+    Data getPreImage(const Script& scriptCode, size_t index, enum TWBitcoinSigHashType hashType, uint64_t amount) const;
+    Data getPrevoutHash() const;
+    Data getSequenceHash() const;
+    Data getOutputsHash() const;
+
+    enum SegwitFormatMode {
+        NonSegwit,
+        IfHasWitness,
+        Segwit
+    };
+
+    /// Encodes the transaction into the provided buffer.
+    void encode(Data& data, enum SegwitFormatMode segwitFormat) const;
+
+    /// Default one-parameter version, needed for templated usage.
+    void encode(Data& data) const { encode(data, SegwitFormatMode::IfHasWitness); }
+
+    /// Encodes the witness part of the transaction into the provided buffer.
+    void encodeWitness(Data& data) const;
+
+    bool hasWitness() const;
+
+    /// Generates the signature hash for this transaction.
+    Data getSignatureHash(const Script& scriptCode, size_t index, enum TWBitcoinSigHashType hashType,
+                          uint64_t amount, enum SignatureVersion version) const;
+
+    void serializeInput(size_t subindex, const Script&, size_t index, enum TWBitcoinSigHashType hashType, Data& data) const;
+
+    /// Converts to Protobuf model
+    Proto::Transaction proto() const;
+
+private:
+    /// Generates the signature hash for Witness version 0 scripts.
+    Data getSignatureHashWitnessV0(const Script& scriptCode, size_t index,
+                                   enum TWBitcoinSigHashType hashType, uint64_t amount) const;
+
+    /// Generates the signature hash for for scripts other than witness scripts.
+    Data getSignatureHashBase(const Script& scriptCode, size_t index,
+                              enum TWBitcoinSigHashType hashType) const;
+*/
+};
+
+class Transaction: public TransactionBase {
+public:
     /// A list of 1 or more transaction inputs or sources for coins
     std::vector<TransactionInput> inputs;
 
@@ -50,10 +117,18 @@ public:
     Transaction() = default;
 
     Transaction(int32_t version, uint32_t lockTime, TW::Hash::Hasher hasher = TW::Hash::sha256d)
-        : version(version), lockTime(lockTime), inputs(), outputs(), hasher(hasher) {}
+        : TransactionBase(version, lockTime), hasher(hasher) {}
+
+    virtual void addInput(const OutPoint& outPoint, const Script& script, uint32_t sequence) {
+        inputs.emplace_back(TransactionInput(outPoint, script, sequence));
+    }
+
+    virtual void addOutput(Amount value, const Script& lockingScriptChange) {
+        outputs.push_back(TransactionOutput(value, lockingScriptChange));
+    }
 
     /// Whether the transaction is empty.
-    bool empty() const { return inputs.empty() && outputs.empty(); }
+    virtual bool empty() const { return inputs.empty() && outputs.empty(); }
 
     /// Generates the signature pre-image.
     Data getPreImage(const Script& scriptCode, size_t index, enum TWBitcoinSigHashType hashType, uint64_t amount) const;

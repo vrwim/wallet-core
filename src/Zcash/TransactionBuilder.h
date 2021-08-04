@@ -17,7 +17,9 @@
 
 namespace TW::Zcash {
 
-struct TransactionBuilder {
+class TransactionBuilder: public Bitcoin::TransactionBuilderBase {
+public:
+    /*
     /// Plans a transaction by selecting UTXOs and calculating fees.
     static Bitcoin::TransactionPlan plan(const Bitcoin::Proto::SigningInput& input) {
         return Bitcoin::TransactionBuilder::plan(input);
@@ -37,6 +39,25 @@ struct TransactionBuilder {
             std::copy(plan.branchId.begin(), plan.branchId.end(), tx.branchId.begin());
         }
         return tx;
+    }
+    */
+
+    // TODO move to .cpp
+    void build2(const Bitcoin::TransactionPlan& plan, const std::string& toAddress,
+                                    const std::string& changeAddress, enum TWCoinType coin, Bitcoin::TransactionBase& transaction) {
+        // Note: up-cast is used here
+        if (!dynamic_cast<Transaction*>(&transaction)) {
+            return;
+        }
+        Transaction& tx = dynamic_cast<Transaction&>(transaction);
+        coin = TWCoinTypeZcash;
+        Bitcoin::TransactionBuilder().build2(plan, toAddress, changeAddress, coin, transaction);
+        // if not set, always use latest consensus branch id
+        if (plan.branchId.empty()) {
+            std::copy(BlossomBranchID.begin(), BlossomBranchID.end(), tx.branchId.begin());
+        } else {
+            std::copy(plan.branchId.begin(), plan.branchId.end(), tx.branchId.begin());
+        }
     }
 };
 

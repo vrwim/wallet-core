@@ -7,6 +7,7 @@
 #pragma once
 
 #include "../Data.h"
+#include "../Bitcoin/OutPoint.h"
 #include "../proto/Bitcoin.pb.h"
 
 #include <algorithm>
@@ -16,35 +17,23 @@ namespace TW::Decred {
 
 /// OutPoint defines a Decred data type that is used to track previous
 /// transaction outputs.
-class OutPoint {
-  public:
-    /// The hash of the referenced transaction.
-    std::array<byte, 32> hash;
-
-    /// The index of the specific output in the transaction.
-    uint32_t index;
-
+class OutPoint: public Bitcoin::OutPoint {
+public:
     /// Which tree the output being spent is in. This is required because there
     /// is more than one tree used to locate transactions in a block.
     int8_t tree;
 
-    OutPoint() = default;
+    OutPoint(): Bitcoin::OutPoint(Data(), 0) {}
 
     /// Initializes an out-point reference.
     OutPoint(std::array<byte, 32>&& hash, uint32_t index, int8_t tree)
-        : hash(hash), index(index), tree(tree) {}
+        : Bitcoin::OutPoint(hash, index), tree(tree) {}
 
     /// Initializes an out-point reference.
-    OutPoint(const Data& hash, uint32_t index, int8_t tree) : hash(), index(index), tree(tree) {
-        std::copy(hash.begin(), hash.end(), this->hash.begin());
-    }
+    OutPoint(const Data& hash, uint32_t index, int8_t tree) : Bitcoin::OutPoint(hash, index), tree(tree) {}
 
     /// Initializes an out-point from a Protobuf out-point.
-    OutPoint(const Bitcoin::Proto::OutPoint& other) {
-        std::copy(other.hash().begin(), other.hash().begin() + hash.size(), hash.begin());
-        index = other.index();
-        tree = 0;
-    }
+    OutPoint(const Bitcoin::Proto::OutPoint& other): Bitcoin::OutPoint(other.hash(), other.index()), tree(0) {}
 
     /// Encodes the out-point into the provided buffer.
     void encode(Data& data) const;

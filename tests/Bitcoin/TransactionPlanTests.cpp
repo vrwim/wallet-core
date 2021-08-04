@@ -24,7 +24,7 @@ TEST(TransactionPlan, OneTypical) {
     auto byteFee = 1;
     auto sigingInput = buildSigningInput(50'000, byteFee, utxos);
 
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     EXPECT_TRUE(verifyPlan(txPlan, {100'000}, 50'000, 147));
 
@@ -36,7 +36,7 @@ TEST(TransactionPlan, OneInsufficient) {
     auto utxos = buildTestUTXOs({100'000});
     auto sigingInput = buildSigningInput(200'000, 1, utxos);
 
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     // Max is returned
     EXPECT_TRUE(verifyPlan(txPlan, {100'000}, 99'887, 113));
@@ -46,7 +46,7 @@ TEST(TransactionPlan, OneInsufficientEqual) {
     auto utxos = buildTestUTXOs({100'000});
     auto sigingInput = buildSigningInput(100'000, 1, utxos);
 
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     // Max is returned
     EXPECT_TRUE(verifyPlan(txPlan, {100'000}, 99'887, 113));
@@ -57,7 +57,7 @@ TEST(TransactionPlan, OneInsufficientLower100) {
     auto utxos = buildTestUTXOs({100'000});
     auto sigingInput = buildSigningInput(100'000 - 100, 1, utxos);
 
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     EXPECT_TRUE(verifyPlan(txPlan, {}, 0, 0, Common::Proto::Error_not_enough_utxos));
 }
@@ -67,7 +67,7 @@ TEST(TransactionPlan, OneInsufficientLower170) {
     auto utxos = buildTestUTXOs({100'000});
     auto sigingInput = buildSigningInput(100'000 - 170, 1, utxos);
 
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     EXPECT_TRUE(verifyPlan(txPlan, {}, 0, 0, Common::Proto::Error_not_enough_utxos));
 }
@@ -76,7 +76,7 @@ TEST(TransactionPlan, OneInsufficientLower300) {
     auto utxos = buildTestUTXOs({100'000});
     auto sigingInput = buildSigningInput(100'000 - 300, 1, utxos);
 
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     EXPECT_TRUE(verifyPlan(txPlan, {100'000}, 100'000 - 300, 147));
 }
@@ -86,7 +86,7 @@ TEST(TransactionPlan, OneMoreRequested) {
     auto byteFee = 1;
     auto sigingInput = buildSigningInput(150'000, byteFee, utxos);
 
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     // Max is returned
     EXPECT_TRUE(verifyPlan(txPlan, {100'000}, 99'887, 113));
@@ -98,7 +98,7 @@ TEST(TransactionPlan, OneFitsExactly) {
     auto expectedFee = 147;
     auto sigingInput = buildSigningInput(100'000 - 174, byteFee, utxos);
 
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     EXPECT_TRUE(verifyPlan(txPlan, {100'000}, 100'000 - 174, expectedFee));
 
@@ -112,7 +112,7 @@ TEST(TransactionPlan, OneFitsExactlyHighFee) {
     auto expectedFee = 1470;
     auto sigingInput = buildSigningInput(100'000 - 1740, byteFee, utxos);
 
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     EXPECT_TRUE(verifyPlan(txPlan, {100'000}, 100'000 - 1740, expectedFee));
 
@@ -124,7 +124,7 @@ TEST(TransactionPlan, TwoFirstEnough) {
     auto utxos = buildTestUTXOs({20'000, 80'000});
     auto sigingInput = buildSigningInput(15'000, 1, utxos);
 
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     EXPECT_TRUE(verifyPlan(txPlan, {20'000}, 15'000, 147));
 }
@@ -133,7 +133,7 @@ TEST(TransactionPlan, TwoSecondEnough) {
     auto utxos = buildTestUTXOs({20'000, 80'000});
     auto sigingInput = buildSigningInput(70'000, 1, utxos);
 
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     EXPECT_TRUE(verifyPlan(txPlan, {80'000}, 70'000, 147));
 }
@@ -142,7 +142,7 @@ TEST(TransactionPlan, TwoBoth) {
     auto utxos = buildTestUTXOs({20'000, 80'000});
     auto sigingInput = buildSigningInput(90'000, 1, utxos);
 
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     EXPECT_TRUE(verifyPlan(txPlan, {20'000, 80'000}, 90'000, 215));
 }
@@ -151,7 +151,7 @@ TEST(TransactionPlan, TwoFirstEnoughButSecond) {
     auto utxos = buildTestUTXOs({20'000, 22'000});
     auto sigingInput = buildSigningInput(18'000, 1, utxos);
 
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     EXPECT_TRUE(verifyPlan(txPlan, {22'000}, 18'000, 147));
 }
@@ -161,7 +161,7 @@ TEST(TransactionPlan, ThreeNoDust) {
     auto sigingInput = buildSigningInput(100'000 - 174 - 10, 1, utxos);
 
     // 100'000 would fit with dust; instead two UTXOs are selected not to leave dust
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     EXPECT_TRUE(verifyPlan(txPlan, {75'000, 100'000}, 100'000 - 174 - 10, 215));
 
@@ -172,12 +172,12 @@ TEST(TransactionPlan, ThreeNoDust) {
     const auto dustLimit = 102;
     // Now 100'000 fits with no dust
     sigingInput = buildSigningInput(100'000 - 174 - dustLimit, 1, utxos);
-    txPlan = TransactionBuilder::plan(sigingInput);
+    txPlan = TransactionBuilder().plan(sigingInput);
     EXPECT_TRUE(verifyPlan(txPlan, {100'000}, 100'000 - 174 - dustLimit, 147));
 
     // One more and we are over dust limit
     sigingInput = buildSigningInput(100'000 - 174 - dustLimit + 1, 1, utxos);
-    txPlan = TransactionBuilder::plan(sigingInput);
+    txPlan = TransactionBuilder().plan(sigingInput);
     EXPECT_TRUE(verifyPlan(txPlan, {75'000, 100'000}, 100'000 - 174 - dustLimit + 1, 215));
 }
 
@@ -185,7 +185,7 @@ TEST(TransactionPlan, TenThree) {
     auto utxos = buildTestUTXOs({1'000, 2'000, 100'000, 3'000, 4'000, 5,000, 125'000, 6'000, 150'000, 7'000});
     auto sigingInput = buildSigningInput(300'000, 1, utxos);
 
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     EXPECT_TRUE(verifyPlan(txPlan, {100'000, 125'000, 150'000}, 300'000, 283));
 }
@@ -194,7 +194,7 @@ TEST(TransactionPlan, NonMaxAmount) {
     auto utxos = buildTestUTXOs({4000, 2000, 6000, 1000, 50000, 120000});
     auto sigingInput = buildSigningInput(10000, 1, utxos);
 
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     EXPECT_TRUE(verifyPlan(txPlan, {50000}, 10000, 147));
 }
@@ -203,7 +203,7 @@ TEST(TransactionPlan, UnspentsInsufficient) {
     auto utxos = buildTestUTXOs({4000, 4000, 4000});
     auto sigingInput = buildSigningInput(15000, 1, utxos);
 
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     // Max is returned
     EXPECT_TRUE(verifyPlan(txPlan, {4000, 4000, 4000}, 11751, 249));
@@ -218,7 +218,7 @@ TEST(TransactionPlan, SelectionSuboptimal_ExtraSmallUtxo) {
     auto sigingInput = buildSigningInput(1'570, byteFee, utxos);
 
     // UTXOs smaller than singleInputFee are not included
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     auto expectedFee = 702;
     EXPECT_TRUE(verifyPlan(txPlan, {500, 600, 800, 1'000}, 1'570, expectedFee));
@@ -236,7 +236,7 @@ TEST(TransactionPlan, Selection_Satisfied5) {
     auto byteFee = 2;
     auto sigingInput = buildSigningInput(1'775, byteFee, utxos);
 
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     EXPECT_TRUE(verifyPlan(txPlan, {400, 500, 600, 800, 1000}, 1775, 838));
 }
@@ -247,7 +247,7 @@ TEST(TransactionPlan, Inputs5_33Req19NoDustFee2) {
     auto sigingInput = buildSigningInput(19'000, byteFee, utxos);
 
     // UTXOs smaller than singleInputFee are not included
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     auto expectedFee = 283*byteFee;
     EXPECT_TRUE(verifyPlan(txPlan, {6'000, 8'000, 10'000}, 19'000, expectedFee));
@@ -262,7 +262,7 @@ TEST(TransactionPlan, Inputs5_33Req19Dust1Fee5) {
     auto sigingInput = buildSigningInput(19'000, byteFee, utxos);
 
     // UTXOs smaller than singleInputFee are not included
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     auto expectedFee = 283*byteFee;
     EXPECT_TRUE(verifyPlan(txPlan, {6'000, 8'000, 10'000}, 19'000, expectedFee));
@@ -277,7 +277,7 @@ TEST(TransactionPlan, Inputs5_33Req19Dust1Fee9) {
     auto sigingInput = buildSigningInput(19'000, byteFee, utxos);
 
     // UTXOs smaller than singleInputFee are not included
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     auto expectedFee = 283*byteFee;
     EXPECT_TRUE(verifyPlan(txPlan, {6'000, 8'000, 10'000}, 19'000, expectedFee));
@@ -292,7 +292,7 @@ TEST(TransactionPlan, Inputs5_33Req19Fee20) {
     auto sigingInput = buildSigningInput(19'000, byteFee, utxos);
 
     // UTXOs smaller than singleInputFee are not included
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     EXPECT_TRUE(verifyPlan(txPlan, {}, 0, 0, Common::Proto::Error_not_enough_utxos));
 }
@@ -303,7 +303,7 @@ TEST(TransactionPlan, Inputs5_33Req13Fee20) {
     auto sigingInput = buildSigningInput(13'000, byteFee, utxos);
 
     // UTXOs smaller than singleInputFee are not included
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     auto expectedFee = 283*byteFee;
     EXPECT_TRUE(verifyPlan(txPlan, {6'000, 8'000, 10'000}, 13'000, expectedFee));
@@ -316,7 +316,7 @@ TEST(TransactionPlan, NoUTXOs) {
     auto utxos = buildTestUTXOs({});
     auto sigingInput = buildSigningInput(15000, 1, utxos);
 
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     EXPECT_TRUE(verifyPlan(txPlan, {}, 0, 0, Common::Proto::Error_missing_input_utxos));
 }
@@ -326,7 +326,7 @@ TEST(TransactionPlan, CustomCase) {
     auto byteFee = 61;
     auto sigingInput = buildSigningInput(2287189, byteFee, utxos);
 
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     EXPECT_TRUE(verifyPlan(txPlan, {794121, 2289357}, 2287189, 13115));
 
@@ -338,7 +338,7 @@ TEST(TransactionPlan, Target0) {
     auto utxos = buildTestUTXOs({2000, 3000});
     auto sigingInput = buildSigningInput(0, 1, utxos);
 
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     EXPECT_TRUE(verifyPlan(txPlan, {}, 0, 0, Common::Proto::Error_zero_amount_requested));
 }
@@ -353,7 +353,7 @@ TEST(TransactionPlan, MaxAmount) {
     EXPECT_EQ(feeCalculator.calculateSingleInput(byteFee), 4080);
 
     // UTXOs smaller than singleInputFee are not included
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     auto expectedFee = 7240;
     EXPECT_TRUE(verifyPlan(txPlan, {15000, 15000}, 30000 - expectedFee, expectedFee));
@@ -363,7 +363,7 @@ TEST(TransactionPlan, MaxAmountOne) {
     auto utxos = buildTestUTXOs({10189534});
     auto sigingInput = buildSigningInput(100, 1, utxos, true);
 
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     auto expectedFee = 113;
     EXPECT_TRUE(verifyPlan(txPlan, {10189534}, 10189534 - expectedFee, expectedFee));
@@ -374,7 +374,7 @@ TEST(TransactionPlan, AmountEqualsMaxButNotUseMax) {
     auto utxos = buildTestUTXOs({10189534});
     auto sigingInput = buildSigningInput(10189534, 1, utxos, false);
 
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     EXPECT_TRUE(verifyPlan(txPlan, {10189534}, 10189421, 113));
 }
@@ -389,7 +389,7 @@ TEST(TransactionPlan, MaxAmountRequestedIsLower) {
     EXPECT_EQ(feeCalculator.calculateSingleInput(byteFee), 4080);
 
     // UTXOs smaller than singleInputFee are not included
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     auto expectedFee = 7240;
     EXPECT_TRUE(verifyPlan(txPlan, {15000, 15000}, 30000 - expectedFee, expectedFee));
@@ -405,7 +405,7 @@ TEST(TransactionPlan, MaxAmountRequestedZero) {
     EXPECT_EQ(feeCalculator.calculateSingleInput(byteFee), 4080);
 
     // UTXOs smaller than singleInputFee are not included
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     auto expectedFee = 7240;
     EXPECT_TRUE(verifyPlan(txPlan, {15000, 15000}, 30000 - expectedFee, expectedFee));
@@ -417,7 +417,7 @@ TEST(TransactionPlan, MaxAmountNoDustFee2) {
     auto sigingInput = buildSigningInput(100, byteFee, utxos, true);
 
     // UTXOs smaller than singleInputFee are not included
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     auto expectedFee = 770;
     EXPECT_TRUE(verifyPlan(txPlan, {400, 500, 600, 800, 1000}, 3'300 - expectedFee, expectedFee));
@@ -433,7 +433,7 @@ TEST(TransactionPlan, MaxAmountDust1Fee4) {
     auto sigingInput = buildSigningInput(100, byteFee, utxos, true);
 
     // UTXOs smaller than singleInputFee are not included
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     auto expectedFee = 1268;
     EXPECT_TRUE(verifyPlan(txPlan, {500, 600, 800, 1000}, 2'900 - expectedFee, expectedFee));
@@ -449,7 +449,7 @@ TEST(TransactionPlan, MaxAmountDust2Fee5) {
     auto sigingInput = buildSigningInput(100, byteFee, utxos, true);
 
     // UTXOs smaller than singleInputFee are not included
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     auto expectedFee = 1245;
     EXPECT_TRUE(verifyPlan(txPlan, {600, 800, 1000}, 2'400 - expectedFee, expectedFee));
@@ -465,7 +465,7 @@ TEST(TransactionPlan, MaxAmountDustAllFee10) {
     auto sigingInput = buildSigningInput(100, byteFee, utxos, true);
 
     // UTXOs smaller than singleInputFee are not included
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     EXPECT_TRUE(verifyPlan(txPlan, {}, 0, 0, Common::Proto::Error_not_enough_utxos));
 
@@ -479,7 +479,7 @@ TEST(TransactionPlan, One_MaxAmount_FeeMoreThanAvailable) {
     auto expectedFee = 113;
     auto sigingInput = buildSigningInput(300, byteFee, utxos, true);
 
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     // Fee is reduced to availableAmount
     EXPECT_TRUE(verifyPlan(txPlan, {170}, 170 - expectedFee, expectedFee));
@@ -493,7 +493,7 @@ TEST(TransactionPlan, MaxAmountDoge) {
     ASSERT_EQ(sumUTXOs(utxos), Amount(2300000000));
     auto sigingInput = buildSigningInput(Amount(2300000000), 100, utxos, true, TWCoinTypeDogecoin);
 
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     EXPECT_TRUE(verifyPlan(txPlan, {100000000, 2000000000, 200000000}, 2299951200, 48800));
 }
@@ -502,7 +502,7 @@ TEST(TransactionPlan, AmountDecred) {
     auto utxos = buildTestUTXOs({Amount(39900000)});
     auto sigingInput = buildSigningInput(Amount(10000000), 10, utxos, false, TWCoinTypeDecred);
 
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     EXPECT_TRUE(verifyPlan(txPlan, {39900000}, 10000000, 2540));
 }
@@ -522,7 +522,7 @@ TEST(TransactionPlan, LotsofUtxosNonmax) {
     auto utxos = buildTestUTXOs(values);
     auto sigingInput = buildSigningInput(requestedAmount, byteFee, utxos, false, TWCoinTypeBitcoin);
 
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     // expected result: 298 utxos, with amounts 70300,70400,70500,...,100000. 
     std::vector<int64_t> subset;
@@ -550,7 +550,7 @@ TEST(TransactionPlan, LotsofUtxosMax) {
     auto utxos = buildTestUTXOs(values);
     auto sigingInput = buildSigningInput(valueSum, byteFee, utxos, true, TWCoinTypeRavencoin);
 
-    auto txPlan = TransactionBuilder::plan(sigingInput);
+    auto txPlan = TransactionBuilder().plan(sigingInput);
 
     // a few smallest UTXOs are filtered out
     const auto dustLimit = byteFee * 148;

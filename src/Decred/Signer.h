@@ -54,12 +54,13 @@ class Signer {
     /// Initializes a transaction signer with signing input.
     explicit Signer(const Bitcoin::Proto::SigningInput& input) 
       : input(input) {
+        TransactionBuilder transactionBuilder;
         if (input.has_plan()) {
           txPlan = Bitcoin::TransactionPlan(input.plan());
         } else {
-          txPlan = TransactionBuilder::plan(input);
+          txPlan = transactionBuilder.plan(input);
         }
-        transaction = TransactionBuilder::build(txPlan, input.to_address(), input.change_address());
+        transactionBuilder.build2(txPlan, input.to_address(), input.change_address(), TWCoinTypeDecred, transaction);
     }
 
     /// Signs the transaction.

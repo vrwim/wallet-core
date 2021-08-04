@@ -56,7 +56,7 @@ TEST(RavencoinTransaction, SignTransaction) {
     auto utxoKey0 = DATA("75e4c520c92b3836e77dfe2715da469b71f7df86fc11ef328870735a700551fa");
     input.add_private_key(TWDataBytes(utxoKey0.get()), TWDataSize(utxoKey0.get()));
 
-    auto plan = TransactionBuilder::plan(input);
+    auto plan = TransactionBuilder().plan(input);
     plan.amount = amount;
     plan.fee = fee;
     plan.change = utxo_amount - amount - fee;
@@ -65,7 +65,8 @@ TEST(RavencoinTransaction, SignTransaction) {
     protoPlan = plan.proto();
 
     // Sign
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     auto result = signer.sign();
     auto signedTx = result.payload();
 

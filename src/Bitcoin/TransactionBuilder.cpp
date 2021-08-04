@@ -15,6 +15,26 @@
 
 namespace TW::Bitcoin {
 
+void TransactionBuilder::build2(const TransactionPlan& plan, const std::string& toAddress,
+                                const std::string& changeAddress, enum TWCoinType coin, TransactionBase& transaction) {
+    auto lockingScriptTo = Script::lockScriptForAddress(toAddress, coin);
+    if (lockingScriptTo.empty()) {
+        return;
+    }
+
+    transaction.addOutput(plan.amount, lockingScriptTo);
+
+    if (plan.change > 0) {
+        auto lockingScriptChange = Script::lockScriptForAddress(changeAddress, coin);
+        transaction.addOutput(plan.change, lockingScriptChange);
+    }
+
+    const auto emptyScript = Script();
+    for (auto& utxo : plan.utxos) {
+        transaction.addInput(utxo.out_point(), emptyScript, utxo.out_point().sequence());
+    }
+}
+
 /// Estimate encoded size by simple formula
 int64_t estimateSimpleFee(const FeeCalculator& feeCalculator, const TransactionPlan& plan, int outputSize, int64_t byteFee) {
     return feeCalculator.calculate(plan.utxos.size(), outputSize, byteFee);
@@ -32,7 +52,8 @@ int64_t estimateSegwitFee(const FeeCalculator& feeCalculator, const TransactionP
     auto inputWithPlan = std::move(input);
     *inputWithPlan.mutable_plan() = plan.proto();
 
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(inputWithPlan), true);
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(inputWithPlan), true);
     auto result = signer.sign();
     if (!result) {
         // signing failed; return default simple estimate
@@ -62,7 +83,7 @@ int64_t estimateSegwitFee(const FeeCalculator& feeCalculator, const TransactionP
     return fee;
 }
 
-TransactionPlan TransactionBuilder::plan(const Bitcoin::Proto::SigningInput& input) {
+TransactionPlan TransactionBuilderBase::plan(const Bitcoin::Proto::SigningInput& input) {
     auto plan = TransactionPlan();
 
     const auto& feeCalculator = getFeeCalculator(static_cast<TWCoinType>(input.coin_type()));

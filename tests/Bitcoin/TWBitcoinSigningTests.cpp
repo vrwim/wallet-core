@@ -88,12 +88,13 @@ TEST(BitcoinSigning, SignP2PKH) {
 
     {
         // test plan (but do not reuse plan result)
-        auto plan = TransactionBuilder::plan(input);
+        auto plan = TransactionBuilder().plan(input);
         EXPECT_TRUE(verifyPlan(plan, {625'000'000}, 335'790'000, 226));
     }
 
     // Sign
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     auto result = signer.sign();
 
     ASSERT_TRUE(result) << std::to_string(result.error());
@@ -119,12 +120,13 @@ TEST(BitcoinSigning, SignP2PKH_NegativeMissingKey) {
 
     {
         // test plan (but do not reuse plan result). Plan works even with missing keys.
-        auto plan = TransactionBuilder::plan(input);
+        auto plan = TransactionBuilder().plan(input);
         EXPECT_TRUE(verifyPlan(plan, {625'000'000}, 335'790'000, 226));
     }
 
     // Sign
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     auto result = signer.sign();
 
     ASSERT_FALSE(result);
@@ -223,7 +225,8 @@ TEST(BitcoinSigning, SignP2WPKH_Bip143) {
     *(plan->add_utxos()) = *utxo1;
 
     // Sign
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     signer.transaction.lockTime = 0x11; // there is no way to set locktime through SigningInput
     auto result = signer.sign();
 
@@ -312,12 +315,13 @@ TEST(BitcoinSigning, SignP2WPKH) {
 
     {
         // test plan (but do not reuse plan result)
-        auto plan = TransactionBuilder::plan(input);
+        auto plan = TransactionBuilder().plan(input);
         EXPECT_TRUE(verifyPlan(plan, {625'000'000}, 335'790'000, 192));
     }
 
     // Signs
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     auto result = signer.sign();
 
     ASSERT_TRUE(result) << std::to_string(result.error());
@@ -361,12 +365,13 @@ TEST(BitcoinSigning, SignP2WPKH_HashSingle_TwoInput) {
 
     {
         // test plan (but do not reuse plan result)
-        auto plan = TransactionBuilder::plan(input);
+        auto plan = TransactionBuilder().plan(input);
         EXPECT_TRUE(verifyPlan(plan, {210'000'000, 210'000'000}, 335'790'000, 261));
     }
 
     // Sign
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     auto result = signer.sign();
 
     ASSERT_TRUE(result) << std::to_string(result.error());
@@ -397,12 +402,13 @@ TEST(BitcoinSigning, SignP2WPKH_HashAnyoneCanPay_TwoInput) {
 
     {
         // test plan (but do not reuse plan result)
-        auto plan = TransactionBuilder::plan(input);
+        auto plan = TransactionBuilder().plan(input);
         EXPECT_TRUE(verifyPlan(plan, {210'000'000, 210'000'000}, 335'790'000, 261));
     }
 
     // Sign
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     auto result = signer.sign();
 
     ASSERT_TRUE(result) << std::to_string(result.error());
@@ -433,12 +439,13 @@ TEST(BitcoinSigning, SignP2WPKH_MaxAmount) {
 
     {
         // test plan (but do not reuse plan result)
-        auto plan = TransactionBuilder::plan(input);
+        auto plan = TransactionBuilder().plan(input);
         EXPECT_TRUE(verifyPlan(plan, {625'000'000, 600'000'000}, 1224999773, 227));
     }
 
     // Sign
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     auto result = signer.sign();
 
     ASSERT_TRUE(result) << std::to_string(result.error());
@@ -524,12 +531,13 @@ TEST(BitcoinSigning, SignP2WSH) {
 
     {
         // test plan (but do not reuse plan result)
-        auto plan = TransactionBuilder::plan(input);
+        auto plan = TransactionBuilder().plan(input);
         EXPECT_TRUE(verifyPlan(plan, {1'226}, 1'000, 147));
     }
 
     // Sign
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     auto result = signer.sign();
 
     ASSERT_TRUE(result) << std::to_string(result.error());
@@ -559,12 +567,13 @@ TEST(BitcoinSigning, SignP2WSH_HashNone) {
 
     {
         // test plan (but do not reuse plan result)
-        auto plan = TransactionBuilder::plan(input);
+        auto plan = TransactionBuilder().plan(input);
         EXPECT_TRUE(verifyPlan(plan, {1'226}, 1'000, 147));
     }
 
     // Sign
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     auto result = signer.sign();
 
     ASSERT_TRUE(result) << std::to_string(result.error());
@@ -594,12 +603,13 @@ TEST(BitcoinSigning, SignP2WSH_HashSingle) {
 
     {
         // test plan (but do not reuse plan result)
-        auto plan = TransactionBuilder::plan(input);
+        auto plan = TransactionBuilder().plan(input);
         EXPECT_TRUE(verifyPlan(plan, {1'226}, 1'000, 147));
     }
 
     // Sign
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     auto result = signer.sign();
 
     ASSERT_TRUE(result) << std::to_string(result.error());
@@ -629,12 +639,13 @@ TEST(BitcoinSigning, SignP2WSH_HashAnyoneCanPay) {
 
     {
         // test plan (but do not reuse plan result)
-        auto plan = TransactionBuilder::plan(input);
+        auto plan = TransactionBuilder().plan(input);
         EXPECT_TRUE(verifyPlan(plan, {1'226}, 1'000, 147));
     }
 
     // Sign
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     auto result = signer.sign();
 
     ASSERT_TRUE(result) << std::to_string(result.error());
@@ -664,12 +675,13 @@ TEST(BitcoinSigning, SignP2WSH_NegativeMissingScript) {
 
     {
         // test plan (but do not reuse plan result)
-        auto plan = TransactionBuilder::plan(input);
+        auto plan = TransactionBuilder().plan(input);
         EXPECT_TRUE(verifyPlan(plan, {1'226}, 1'000, 174));
     }
 
     // Sign
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     auto result = signer.sign();
 
     ASSERT_FALSE(result);
@@ -681,12 +693,13 @@ TEST(BitcoinSigning, SignP2WSH_NegativeMissingKeys) {
 
     {
         // test plan (but do not reuse plan result). Plan works even with missing keys.
-        auto plan = TransactionBuilder::plan(input);
+        auto plan = TransactionBuilder().plan(input);
         EXPECT_TRUE(verifyPlan(plan, {1'226}, 1'000, 147));
     }
 
     // Sign
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     auto result = signer.sign();
 
     ASSERT_FALSE(result);
@@ -700,7 +713,8 @@ TEST(BitcoinSigning, SignP2WSH_NegativePlanWithError) {
     input.mutable_plan()->set_error(Common::Proto::Error_missing_input_utxos);
 
     // Sign
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     auto result = signer.sign();
 
     ASSERT_FALSE(result);
@@ -714,7 +728,8 @@ TEST(BitcoinSigning, SignP2WSH_NegativeNoUTXOs) {
     input.mutable_plan()->clear_utxos();
 
     // Sign
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     auto result = signer.sign();
 
     ASSERT_FALSE(result);
@@ -727,7 +742,8 @@ TEST(BitcoinSigning, SignP2WSH_NegativePlanWithNoUTXOs) {
     input.mutable_plan()->clear_utxos();
 
     // Sign
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     auto result = signer.sign();
 
     ASSERT_FALSE(result);
@@ -808,12 +824,13 @@ TEST(BitcoinSigning, SignP2SH_P2WPKH) {
     auto input = buildInputP2SH_P2WPKH();
     {
         // test plan (but do not reuse plan result)
-        auto plan = TransactionBuilder::plan(input);
+        auto plan = TransactionBuilder().plan(input);
         EXPECT_TRUE(verifyPlan(plan, {1'000'000'000}, 200'000'000, 170));
     }
 
     // Sign
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     auto result = signer.sign();
 
     ASSERT_TRUE(result) << std::to_string(result.error());
@@ -841,12 +858,13 @@ TEST(BitcoinSigning, SignP2SH_P2WPKH_NegativeOmitScript) {
     auto input = buildInputP2SH_P2WPKH(true, false);
     {
         // test plan (but do not reuse plan result)
-        auto plan = TransactionBuilder::plan(input);
+        auto plan = TransactionBuilder().plan(input);
         EXPECT_TRUE(verifyPlan(plan, {1'000'000'000}, 200'000'000, 174));
     }
 
     // Sign
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     auto result = signer.sign();
 
     ASSERT_FALSE(result);
@@ -857,12 +875,13 @@ TEST(BitcoinSigning, SignP2SH_P2WPKH_NegativeInvalidOutputScript) {
     auto input = buildInputP2SH_P2WPKH(false, false, true);
     {
         // test plan (but do not reuse plan result)
-        auto plan = TransactionBuilder::plan(input);
+        auto plan = TransactionBuilder().plan(input);
         EXPECT_TRUE(verifyPlan(plan, {1'000'000'000}, 200'000'000, 174));
     }
 
     // Sign
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     auto result = signer.sign();
 
     ASSERT_FALSE(result);
@@ -873,12 +892,13 @@ TEST(BitcoinSigning, SignP2SH_P2WPKH_NegativeInvalidRedeemScript) {
     auto input = buildInputP2SH_P2WPKH(false, false, false, true);
     {
         // test plan (but do not reuse plan result)
-        auto plan = TransactionBuilder::plan(input);
+        auto plan = TransactionBuilder().plan(input);
         EXPECT_TRUE(verifyPlan(plan, {1'000'000'000}, 200'000'000, 174));
     }
 
     // Sign
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     auto result = signer.sign();
 
     ASSERT_FALSE(result);
@@ -889,12 +909,13 @@ TEST(BitcoinSigning, SignP2SH_P2WPKH_NegativeOmitKeys) {
     auto input = buildInputP2SH_P2WPKH(false, true);
     {
         // test plan (but do not reuse plan result). Plan works even with missing keys.
-        auto plan = TransactionBuilder::plan(input);
+        auto plan = TransactionBuilder().plan(input);
         EXPECT_TRUE(verifyPlan(plan, {1'000'000'000}, 200'000'000, 170));
     }
 
     // Sign
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     auto result = signer.sign();
 
     ASSERT_FALSE(result);
@@ -985,7 +1006,8 @@ TEST(BitcoinSigning, SignP2SH_P2WSH) {
     utxo->set_amount(987654321);
 
     // Sign
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     signer.transaction = unsignedTx;
     signer.plan.utxos = {*utxo};
     auto result = signer.sign();
@@ -1036,12 +1058,13 @@ TEST(BitcoinSigning, Sign_NegativeNoUtxos) {
 
     {
         // plan returns empty, as there are 0 utxos
-        auto plan = TransactionBuilder::plan(input);
+        auto plan = TransactionBuilder().plan(input);
         EXPECT_TRUE(verifyPlan(plan, {}, 0, 0, Common::Proto::Error_missing_input_utxos));
     }
 
     // Invoke Sign nonetheless
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     auto result = signer.sign();
 
     // Fails as there are 0 utxos
@@ -1095,12 +1118,13 @@ TEST(BitcoinSigning, Sign_NegativeInvalidAddress) {
 
     {
         // test plan (but do not reuse plan result)
-        auto plan = TransactionBuilder::plan(input);
+        auto plan = TransactionBuilder().plan(input);
         EXPECT_TRUE(verifyPlan(plan, {625'000'000}, 335'790'000, 174));
     }
 
     // Sign
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     auto result = signer.sign();
 
     ASSERT_FALSE(result);
@@ -1144,7 +1168,7 @@ TEST(BitcoinSigning, Plan_10input_MaxAmount) {
     // Plan.  
     // Estimated size: witness size: 10 * (1 + 1 + 72 + 1 + 33) + 2 = 1082; base 451; raw 451 + 1082 = 1533; vsize 451 + 1082/4 --> 722
     // Actual size:    witness size:                                  1078; base 451; raw 451 + 1078 = 1529; vsize 451 + 1078/4 --> 721
-    auto plan = TransactionBuilder::plan(input);
+    auto plan = TransactionBuilder().plan(input);
     EXPECT_TRUE(verifyPlan(plan, {1'000'000, 1'010'000, 1'020'000, 1'030'000, 1'040'000, 1'050'000, 1'060'000, 1'070'000, 1'080'000, 1'090'000}, 10'449'278, 722));
 
     // Extend input with keys, reuse plan, Sign
@@ -1153,7 +1177,8 @@ TEST(BitcoinSigning, Plan_10input_MaxAmount) {
     *input.mutable_plan() = plan.proto();
 
     // Sign
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     auto result = signer.sign();
 
     ASSERT_TRUE(result) << std::to_string(result.error());
@@ -1213,7 +1238,8 @@ TEST(BitcoinSigning, Sign_LitecoinReal_a85f) {
     EXPECT_TRUE(verifyPlan(input.plan(), {3'900'000}, 3'899'774, 226));
 
     // Sign
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     auto result = signer.sign();
 
     ASSERT_TRUE(result) << std::to_string(result.error());
@@ -1272,7 +1298,7 @@ TEST(BitcoinSigning, PlanAndSign_LitecoinReal_8435) {
     utxo0->mutable_out_point()->set_sequence(UINT32_MAX);
 
     // Plan
-    auto plan = TransactionBuilder::plan(input);
+    auto plan = TransactionBuilder().plan(input);
     EXPECT_TRUE(verifyPlan(plan, {3'899'774}, 1'200'000, 141));
 
     // Extend input with keys and plan, for Sign
@@ -1281,7 +1307,8 @@ TEST(BitcoinSigning, PlanAndSign_LitecoinReal_8435) {
     *input.mutable_plan() = plan.proto();
 
     // Sign
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     auto result = signer.sign();
 
     ASSERT_TRUE(result) << std::to_string(result.error());
@@ -1445,7 +1472,8 @@ TEST(BitcoinSigning, RedeemExtendedPubkeyUTXO) {
     input.add_private_key(key.bytes.data(), key.bytes.size());
 
     // Sign
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     auto result = signer.sign();
 
     ASSERT_TRUE(result) << std::to_string(result.error());

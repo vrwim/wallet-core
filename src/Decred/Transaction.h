@@ -9,6 +9,7 @@
 #include <TrustWalletCore/TWBitcoinSigHashType.h>
 #include "TransactionInput.h"
 #include "TransactionOutput.h"
+#include "Bitcoin/Transaction.h"
 #include "Bitcoin/Script.h"
 #include "../Data.h"
 #include "../proto/Decred.pb.h"
@@ -20,12 +21,13 @@ namespace TW::Decred {
 
 enum class SerializeType : uint16_t { full, noWitness, onlyWitness };
 
-struct Transaction {
+class Transaction: public Bitcoin::TransactionBase {
+public:
     /// Serialization format
     SerializeType serializeType = SerializeType::full;
 
     /// Transaction data format version
-    uint16_t version = 1;
+    // TODO remove uint16_t version = 1;
 
     /// A list of 1 or more transaction inputs or sources for coins
     std::vector<TransactionInput> inputs;
@@ -35,18 +37,34 @@ struct Transaction {
 
     /// The time when a transaction can be spent (usually zero, in which case it
     /// has no effect).
-    uint32_t lockTime = 0;
+    // TODO remove uint32_t lockTime = 0;
 
     /// The block height at which the transaction expires and is no longer
     /// valid.
     uint32_t expiry = 0;
 
     Transaction()
-        : inputs()
+        : TransactionBase()
+        , inputs()
         , outputs() {}
 
+    virtual void addInput(const Bitcoin::OutPoint& outPoint, const Bitcoin::Script& script, uint32_t sequence) {
+        // Note: up-cast is used here
+        if (dynamic_cast<const OutPoint*>(&outPoint) != nullptr) {
+            TransactionInput input;
+            input.previousOutput = dynamic_cast<const OutPoint&>(outPoint);
+            input.sequence = sequence;
+            input.script = script;
+            inputs.emplace_back(input);
+        }
+    }
+
+    virtual void addOutput(Bitcoin::Amount value, const Bitcoin::Script& lockingScript) {
+        outputs.emplace_back(TransactionOutput(value, /* version: */ 0, lockingScript));
+    }
+
     /// Whether the transaction is empty.
-    bool empty() const { return inputs.empty() && outputs.empty(); }
+    virtual bool empty() const { return inputs.empty() && outputs.empty(); }
 
     /// Generates the signature pre-image.
     Data computeSignatureHash(const Bitcoin::Script& scriptCode, size_t index,

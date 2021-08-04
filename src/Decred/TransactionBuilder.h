@@ -7,6 +7,7 @@
 #pragma once
 
 #include "Transaction.h"
+#include "../Bitcoin/Transaction.h"
 #include "../Bitcoin/TransactionPlan.h"
 #include "../Bitcoin/TransactionBuilder.h"
 #include "../proto/Bitcoin.pb.h"
@@ -18,22 +19,30 @@
 
 namespace TW::Decred {
 
-struct TransactionBuilder {
+class TransactionBuilder: public Bitcoin::TransactionBuilderBase {
+public:
+    /* TODO remove
     /// Plans a transaction by selecting UTXOs and calculating fees.
     static Bitcoin::TransactionPlan plan(const Bitcoin::Proto::SigningInput& input) {
         return Bitcoin::TransactionBuilder::plan(input);
     }
+    */
 
     /// Builds a transaction by selecting UTXOs and calculating fees.
-    static Transaction build(const Bitcoin::TransactionPlan& plan, const std::string& toAddress,
-                             const std::string& changeAddress) {
-        auto coin = TWCoinTypeDecred;                                 
+    /// TODO rename
+    virtual void build2(const Bitcoin::TransactionPlan& plan, const std::string& toAddress,
+                        const std::string& changeAddress, enum TWCoinType coin, Bitcoin::TransactionBase& transaction) {
+    //static Transaction build(const Bitcoin::TransactionPlan& plan, const std::string& toAddress,
+    //                         const std::string& changeAddress) {
+        if (!dynamic_cast<Transaction*>(&transaction)) {
+            return;
+        }
+        Transaction& tx = dynamic_cast<Transaction&>(transaction);
         auto lockingScriptTo = Bitcoin::Script::lockScriptForAddress(toAddress, coin);
         if (lockingScriptTo.empty()) {
-            return {};
+            return;
         }
 
-        Transaction tx;
         tx.outputs.emplace_back(TransactionOutput(plan.amount, /* version: */ 0, lockingScriptTo));
 
         if (plan.change > 0) {
@@ -49,8 +58,6 @@ struct TransactionBuilder {
             input.sequence = utxo.out_point().sequence();
             tx.inputs.push_back(std::move(input));
         }
-
-        return tx;
     }
 };
 

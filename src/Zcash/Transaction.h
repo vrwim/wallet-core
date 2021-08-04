@@ -22,10 +22,11 @@ extern const std::array<byte, 4> BlossomBranchID;
 
 /// Only supports transparent transaction right now
 /// See also https://github.com/zcash/zips/blob/master/zip-0243.rst
-struct Transaction {
-    uint32_t version = 0x80000004;
+class Transaction: public Bitcoin::TransactionBase {
+public:
+    // TODO remove uint32_t version = 0x80000004;
     uint32_t versionGroupId = 0x892F2085;
-    uint32_t lockTime = 0;
+    // TODO remove uint32_t lockTime = 0;
     uint32_t expiryHeight = 0;
     uint64_t valueBalance = 0;
 
@@ -36,19 +37,28 @@ struct Transaction {
     /// Used for diagnostics; store previously estimated virtual size (if any; size in bytes)
     int previousEstimatedVirtualSize = 0;
 
-    Transaction() = default;
+    Transaction() : Bitcoin::TransactionBase(0x80000004, 0) {}
 
     Transaction(uint32_t version, uint32_t versionGroupId, uint32_t lockTime, uint32_t expiryHeight,
                 uint64_t valueBalance, std::array<byte, 4> branchId)
-        : version(version)
+        : Bitcoin::TransactionBase(version, lockTime)
+        // TODO remove version(version)
         , versionGroupId(versionGroupId)
-        , lockTime(lockTime)
+        // TODO remove, lockTime(lockTime)
         , expiryHeight(expiryHeight)
         , valueBalance(valueBalance)
         , branchId(branchId) {}
 
+    virtual void addInput(const Bitcoin::OutPoint& outPoint, const Bitcoin::Script& script, uint32_t sequence) {
+        inputs.emplace_back(Bitcoin::TransactionInput(outPoint, script, sequence));
+    }
+
+    virtual void addOutput(Bitcoin::Amount value, const Bitcoin::Script& lockingScriptChange) {
+        outputs.push_back(Bitcoin::TransactionOutput(value, lockingScriptChange));
+    }
+
     /// Whether the transaction is empty.
-    bool empty() const { return inputs.empty() && outputs.empty(); }
+    virtual bool empty() const { return inputs.empty() && outputs.empty(); }
 
     /// Generates the signature pre-image.
     Data getPreImage(const Bitcoin::Script& scriptCode, size_t index,

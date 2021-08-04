@@ -105,7 +105,7 @@ TEST(TWZcashTransaction, SaplingSigning) {
     auto utxoKey0 = DATA("a9684f5bebd0e1208aae2e02bc9e9163bd1965ad23d8538644e1df8b99b99559");
     input.add_private_key(TWDataBytes(utxoKey0.get()), TWDataSize(utxoKey0.get()));
 
-    auto plan = Zcash::TransactionBuilder::plan(input);
+    auto plan = Zcash::TransactionBuilder().plan(input);
     plan.amount = amount;
     plan.fee = fee;
     plan.change = 0;
@@ -115,7 +115,8 @@ TEST(TWZcashTransaction, SaplingSigning) {
     protoPlan = plan.proto();
 
     // Sign
-    auto result = Bitcoin::TransactionSigner<Zcash::Transaction, Zcash::TransactionBuilder>(std::move(input)).sign();
+    Zcash::TransactionBuilder transactionBuilder;
+    auto result = Bitcoin::TransactionSigner<Zcash::Transaction>(transactionBuilder, std::move(input)).sign();
     ASSERT_TRUE(result) << std::to_string(result.error());
     auto signedTx = result.payload();
 
@@ -169,7 +170,7 @@ TEST(TWZcashTransaction, BlossomSigning) {
     utxo0->set_script(script0.bytes.data(), script0.bytes.size());
     input.add_private_key(utxoKey0.bytes.data(), utxoKey0.bytes.size());
 
-    auto plan = Zcash::TransactionBuilder::plan(input);
+    auto plan = Zcash::TransactionBuilder().plan(input);
     plan.amount = amount;
     plan.fee = fee;
     plan.change = 0;
@@ -178,7 +179,8 @@ TEST(TWZcashTransaction, BlossomSigning) {
     protoPlan = plan.proto();
 
     // Sign
-    auto result = Bitcoin::TransactionSigner<Zcash::Transaction, Zcash::TransactionBuilder>(std::move(input)).sign();
+    Zcash::TransactionBuilder transactionBuilder;
+    auto result = Bitcoin::TransactionSigner<Zcash::Transaction>(transactionBuilder, std::move(input)).sign();
     ASSERT_TRUE(result) << std::to_string(result.error());
     auto signedTx = result.payload();
 

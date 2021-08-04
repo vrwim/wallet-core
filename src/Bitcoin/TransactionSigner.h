@@ -11,13 +11,13 @@
 #include "Transaction.h"
 #include "TransactionBuilder.h"
 #include "TransactionInput.h"
-#include "../Groestlcoin/Transaction.h"
+//#include "../Groestlcoin/Transaction.h"
 #include "../Hash.h"
 #include "../PrivateKey.h"
 #include "../KeyPair.h"
 #include "../Result.h"
-#include "../Zcash/Transaction.h"
-#include "../Zcash/TransactionBuilder.h"
+//#include "../Zcash/Transaction.h"
+//#include "../Zcash/TransactionBuilder.h"
 #include "../proto/Bitcoin.pb.h"
 
 #include <memory>
@@ -25,59 +25,81 @@
 #include <vector>
 #include <optional>
 
+// TODO: change througout Bitcoin::Transaction -> Transaction
+// TODO change TransactionTN to Transaction (if remains)
+// TODO change TransactionBuilderTN to TransactionBuilder (if remains)
+
 namespace TW::Bitcoin {
 
 /// Helper class that performs Bitcoin transaction signing.
-template <typename Transaction, typename TransactionBuilder>
+template <typename TransactionTN>
 class TransactionSigner {
-  private:
+private:
     /// Private key and redeem script provider for signing.
     Proto::SigningInput input;
 
-  public:
+public:
     /// Transaction plan.
     TransactionPlan plan;
 
     /// Transaction being signed.
-    Transaction transaction;
+    TransactionTN transaction; // TODO remove qualifier
 
-  private:
+private:
     /// List of signed inputs.
     std::vector<TransactionInput> signedInputs;
 
     bool estimationMode = false;
 
-  public:
+public:
     /// Initializes a transaction signer with signing input.
-    /// estimationMode: is set, no real signing is performed, only as much as needed to get the almost-exact signed size 
+    /// estimationMode: is set, no real signing is performed, only as much as needed to get the almost-exact signed size
+    // TODO move to .cpp
+    TransactionSigner(TransactionBuilderBase& transactionBuilder, const Bitcoin::Proto::SigningInput& input, bool estimationMode = false) :
+        input(input), estimationMode(estimationMode) {
+        if (input.has_plan()) {
+            plan = TransactionPlan(input.plan());
+        } else {
+            plan = transactionBuilder.plan(input);
+        }
+        transactionBuilder.build2(
+            plan, input.to_address(), input.change_address(), TWCoinType(input.coin_type()), transaction
+        );
+    }
+    
+    /* TODO remove
+    /// Initializes a transaction signer with signing input.
+    /// estimationMode: is set, no real signing is performed, only as much as needed to get the almost-exact signed size
     TransactionSigner(const Bitcoin::Proto::SigningInput& input, bool estimationMode = false) :
     input(input), estimationMode(estimationMode) {
-      if (input.has_plan()) {
-        plan = TransactionPlan(input.plan());
-      } else {
-        plan = TransactionBuilder::plan(input);
-      }
-      transaction = TransactionBuilder::template build<Transaction>(
-        plan, input.to_address(), input.change_address(), TWCoinType(input.coin_type())
-      );
+        TransactionBuilderTN transactionBuilder;
+        if (input.has_plan()) {
+            plan = TransactionPlan(input.plan());
+        } else {
+            plan = transactionBuilder.plan(input);
+        }
+        transactionBuilder.build2(
+            plan, input.to_address(), input.change_address(), TWCoinType(input.coin_type()), transaction
+        );
     }
+    */
 
     /// Signs the transaction.
     ///
     /// \returns the signed transaction or an error.
-    Result<Transaction, Common::Proto::SigningError> sign();
+    Result<TransactionTN, Common::Proto::SigningError> sign();
 
     // helper, return binary encoded transaction (used right after sign())
-    static void encodeTx(const Transaction& tx, Data& outData) { tx.encode(outData); }
+    static void encodeTx(const TransactionTN& tx, Data& outData) { tx.encode(outData); }
 
     // internal, public for testability and Decred
     static Data pushAll(const std::vector<Data>& results);
 
-  private:
+private:
     Result<void, Common::Proto::SigningError> sign(Script script, size_t index, const Proto::UnspentTransaction& utxo);
     Result<std::vector<Data>, Common::Proto::SigningError> signStep(Script script, size_t index,
                                        const Proto::UnspentTransaction& utxo, uint32_t version) const;
-    Data createSignature(const Transaction& transaction, const Script& script, const std::optional<KeyPair>&,
+    Data createSignature(const TransactionTN& transaction, const Script& script, const std::optional<KeyPair>&,
                          size_t index, Amount amount, uint32_t version) const;
 
     /// Returns the private key for the given public key hash.

@@ -26,9 +26,8 @@ class OutPoint {
 
     /// Initializes an out-point reference with a hash and an index.
     template <typename T>
-    OutPoint(const T& h, uint32_t index) {
+    OutPoint(const T& h, uint32_t index): index(index) {
         std::copy(std::begin(h), std::end(h), hash.begin());
-        this->index = index;
     }
 
     /// Initializes an out-point from a Protobuf out-point.
@@ -37,6 +36,8 @@ class OutPoint {
         std::copy(other.hash().begin(), other.hash().end(), hash.begin());
         index = other.index();
     }
+
+    virtual ~OutPoint() = default;
 
     /// Encodes the out-point into the provided buffer.
     void encode(std::vector<uint8_t>& data) const;

@@ -52,7 +52,7 @@ TEST(DigiByteTransaction, SignTransaction) {
     auto utxoKey0 = DATA("b00420bab8b663f0870ee8e46435743ba9588eb88d8d31410ed54afa67602e8d");
     input.add_private_key(TWDataBytes(utxoKey0.get()), TWDataSize(utxoKey0.get()));
 
-    auto plan = Bitcoin::TransactionBuilder::plan(input);
+    auto plan = Bitcoin::TransactionBuilder().plan(input);
     plan.amount = amount;
     plan.fee = fee;
     plan.change = utxo_amount - amount - fee;
@@ -61,7 +61,8 @@ TEST(DigiByteTransaction, SignTransaction) {
     protoPlan = plan.proto();
 
     // Sign
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     auto result = signer.sign();
     auto signedTx = result.payload();
 
@@ -119,7 +120,8 @@ TEST(DigiByteTransaction, SignP2WPKH) {
     utxo0->mutable_out_point()->set_index(1);
     utxo0->mutable_out_point()->set_sequence(UINT32_MAX);
 
-    auto signer = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    TransactionBuilder transactionBuilder;
+    auto signer = TransactionSigner<Transaction>(transactionBuilder, std::move(input));
     auto result = signer.sign();
     ASSERT_TRUE(result) << std::to_string(result.error());
     auto signedTx = result.payload();
