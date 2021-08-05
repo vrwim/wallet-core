@@ -19,7 +19,7 @@ namespace TW::Bitcoin {
 class TransactionBuilderBase {
 public:
     /// Plans a transaction by selecting UTXOs and calculating fees.
-    TransactionPlan plan(const Bitcoin::Proto::SigningInput& input);
+    TransactionPlan plan(const Bitcoin::Proto::SigningInput& input) const;
 
     /// Builds a transaction by selecting UTXOs and calculating fees.
     virtual void build(const TransactionPlan& plan, const std::string& toAddress,

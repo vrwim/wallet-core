@@ -55,7 +55,7 @@ public:
     /// Initializes a transaction signer with signing input.
     /// estimationMode: is set, no real signing is performed, only as much as needed to get the almost-exact signed size
     // TODO move to .cpp
-    TransactionSigner(TransactionBuilderBase& transactionBuilder, const Bitcoin::Proto::SigningInput& input, bool estimationMode = false) :
+    TransactionSigner(const TransactionBuilderBase& transactionBuilder, const Bitcoin::Proto::SigningInput& input, bool estimationMode = false) :
         input(input), estimationMode(estimationMode) {
         if (input.has_plan()) {
             plan = TransactionPlan(input.plan());

@@ -83,7 +83,7 @@ int64_t estimateSegwitFee(const FeeCalculator& feeCalculator, const TransactionP
     return fee;
 }
 
-TransactionPlan TransactionBuilderBase::plan(const Bitcoin::Proto::SigningInput& input) {
+TransactionPlan TransactionBuilderBase::plan(const Bitcoin::Proto::SigningInput& input) const {
     auto plan = TransactionPlan();
 
     const auto& feeCalculator = getFeeCalculator(static_cast<TWCoinType>(input.coin_type()));
