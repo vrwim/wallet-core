@@ -60,7 +60,7 @@ class Signer {
         } else {
           txPlan = transactionBuilder.plan(input);
         }
-        transactionBuilder.build2(txPlan, input.to_address(), input.change_address(), TWCoinTypeDecred, transaction);
+        transactionBuilder.build(txPlan, input.to_address(), input.change_address(), TWCoinTypeDecred, transaction);
     }
 
     /// Signs the transaction.

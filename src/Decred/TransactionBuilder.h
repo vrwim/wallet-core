@@ -21,19 +21,10 @@ namespace TW::Decred {
 
 class TransactionBuilder: public Bitcoin::TransactionBuilderBase {
 public:
-    /* TODO remove
-    /// Plans a transaction by selecting UTXOs and calculating fees.
-    static Bitcoin::TransactionPlan plan(const Bitcoin::Proto::SigningInput& input) {
-        return Bitcoin::TransactionBuilder::plan(input);
-    }
-    */
-
     /// Builds a transaction by selecting UTXOs and calculating fees.
     /// TODO rename
-    virtual void build2(const Bitcoin::TransactionPlan& plan, const std::string& toAddress,
-                        const std::string& changeAddress, enum TWCoinType coin, Bitcoin::TransactionBase& transaction) {
-    //static Transaction build(const Bitcoin::TransactionPlan& plan, const std::string& toAddress,
-    //                         const std::string& changeAddress) {
+    virtual void build(const Bitcoin::TransactionPlan& plan, const std::string& toAddress,
+                       const std::string& changeAddress, enum TWCoinType coin, Bitcoin::TransactionBase& transaction) const {
         if (!dynamic_cast<Transaction*>(&transaction)) {
             return;
         }

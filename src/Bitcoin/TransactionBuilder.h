@@ -22,9 +22,8 @@ public:
     TransactionPlan plan(const Bitcoin::Proto::SigningInput& input);
 
     /// Builds a transaction by selecting UTXOs and calculating fees.
-    /// TODO rename
-    virtual void build2(const TransactionPlan& plan, const std::string& toAddress,
-                        const std::string& changeAddress, enum TWCoinType coin, TransactionBase& transaction) = 0;
+    virtual void build(const TransactionPlan& plan, const std::string& toAddress,
+                       const std::string& changeAddress, enum TWCoinType coin, TransactionBase& transaction) const = 0;
 };
 
 class TransactionBuilder: public TransactionBuilderBase {
@@ -32,36 +31,8 @@ public:
     TransactionBuilder() = default;
 
     /// Builds a transaction by selecting UTXOs and calculating fees.
-    /// TODO rename
-    virtual void build2(const TransactionPlan& plan, const std::string& toAddress,
-                        const std::string& changeAddress, enum TWCoinType coin, TransactionBase& transaction);
-
-    /// Builds a transaction by selecting UTXOs and calculating fees.
-    /* TODO remove
-    template <typename Transaction>
-    static Transaction build(const TransactionPlan& plan, const std::string& toAddress,
-                             const std::string& changeAddress, enum TWCoinType coin) {
-        auto lockingScriptTo = Script::lockScriptForAddress(toAddress, coin);
-        if (lockingScriptTo.empty()) {
-            return {};
-        }
-
-        Transaction tx;
-        tx.outputs.push_back(TransactionOutput(plan.amount, lockingScriptTo));
-
-        if (plan.change > 0) {
-            auto lockingScriptChange = Script::lockScriptForAddress(changeAddress, coin);
-            tx.outputs.push_back(TransactionOutput(plan.change, lockingScriptChange));
-        }
-
-        const auto emptyScript = Script();
-        for (auto& utxo : plan.utxos) {
-            tx.inputs.emplace_back(utxo.out_point(), emptyScript, utxo.out_point().sequence());
-        }
-
-        return tx;
-    }
-    */
+    virtual void build(const TransactionPlan& plan, const std::string& toAddress,
+                       const std::string& changeAddress, enum TWCoinType coin, TransactionBase& transaction) const;
 };
 
 } // namespace TW::Bitcoin

@@ -62,27 +62,10 @@ public:
         } else {
             plan = transactionBuilder.plan(input);
         }
-        transactionBuilder.build2(
+        transactionBuilder.build(
             plan, input.to_address(), input.change_address(), TWCoinType(input.coin_type()), transaction
         );
     }
-    
-    /* TODO remove
-    /// Initializes a transaction signer with signing input.
-    /// estimationMode: is set, no real signing is performed, only as much as needed to get the almost-exact signed size
-    TransactionSigner(const Bitcoin::Proto::SigningInput& input, bool estimationMode = false) :
-    input(input), estimationMode(estimationMode) {
-        TransactionBuilderTN transactionBuilder;
-        if (input.has_plan()) {
-            plan = TransactionPlan(input.plan());
-        } else {
-            plan = transactionBuilder.plan(input);
-        }
-        transactionBuilder.build2(
-            plan, input.to_address(), input.change_address(), TWCoinType(input.coin_type()), transaction
-        );
-    }
-    */
 
     /// Signs the transaction.
     ///

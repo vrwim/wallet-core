@@ -43,15 +43,15 @@ public:
     */
 
     // TODO move to .cpp
-    void build2(const Bitcoin::TransactionPlan& plan, const std::string& toAddress,
-                                    const std::string& changeAddress, enum TWCoinType coin, Bitcoin::TransactionBase& transaction) {
+    void build(const Bitcoin::TransactionPlan& plan, const std::string& toAddress,
+               const std::string& changeAddress, enum TWCoinType coin, Bitcoin::TransactionBase& transaction) const {
         // Note: up-cast is used here
         if (!dynamic_cast<Transaction*>(&transaction)) {
             return;
         }
         Transaction& tx = dynamic_cast<Transaction&>(transaction);
         coin = TWCoinTypeZcash;
-        Bitcoin::TransactionBuilder().build2(plan, toAddress, changeAddress, coin, transaction);
+        Bitcoin::TransactionBuilder().build(plan, toAddress, changeAddress, coin, transaction);
         // if not set, always use latest consensus branch id
         if (plan.branchId.empty()) {
             std::copy(BlossomBranchID.begin(), BlossomBranchID.end(), tx.branchId.begin());

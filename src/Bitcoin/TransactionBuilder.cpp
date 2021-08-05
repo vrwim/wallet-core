@@ -15,8 +15,8 @@
 
 namespace TW::Bitcoin {
 
-void TransactionBuilder::build2(const TransactionPlan& plan, const std::string& toAddress,
-                                const std::string& changeAddress, enum TWCoinType coin, TransactionBase& transaction) {
+void TransactionBuilder::build(const TransactionPlan& plan, const std::string& toAddress,
+                               const std::string& changeAddress, enum TWCoinType coin, TransactionBase& transaction) const {
     auto lockingScriptTo = Script::lockScriptForAddress(toAddress, coin);
     if (lockingScriptTo.empty()) {
         return;
