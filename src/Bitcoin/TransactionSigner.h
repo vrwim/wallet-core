@@ -46,6 +46,8 @@ public:
     TransactionTN transaction; // TODO remove qualifier
 
 private:
+    const TransactionBuilderBase& transactionBuilder;
+
     /// List of signed inputs.
     std::vector<TransactionInput> signedInputs;
 
@@ -56,15 +58,18 @@ public:
     /// estimationMode: is set, no real signing is performed, only as much as needed to get the almost-exact signed size
     // TODO move to .cpp
     TransactionSigner(const TransactionBuilderBase& transactionBuilder, const Bitcoin::Proto::SigningInput& input, bool estimationMode = false) :
-        input(input), estimationMode(estimationMode) {
+        input(input), transactionBuilder(transactionBuilder), estimationMode(estimationMode) {
+        planAndBuild();
+    }
+    
+    // TODO move to .cpp
+    void planAndBuild() {
         if (input.has_plan()) {
             plan = TransactionPlan(input.plan());
         } else {
             plan = transactionBuilder.plan(input);
         }
-        transactionBuilder.build(
-            plan, input.to_address(), input.change_address(), TWCoinType(input.coin_type()), transaction
-        );
+        transactionBuilder.build(plan, input.to_address(), input.change_address(), TWCoinType(input.coin_type()), transaction);
     }
 
     /// Signs the transaction.
